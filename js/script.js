@@ -9,27 +9,17 @@
 // Wait for the DOM to be fully loaded before attaching events
 document.addEventListener("DOMContentLoaded", function () {
   // ------------------------------------------------------------------------
-  // 1. Grade Scale Mappings & Storage Key
+  // 1. Grade Scale Mappings & Storage Keys
   // ------------------------------------------------------------------------
   const STORAGE_KEY = "student_cgpa_history_records";
+  const CUSTOM_SCALES_KEY = "student_cgpa_custom_scales";
 
-  const GRADE_SCALES = {
-    "5.0": {
-      A: 5,
-      B: 4,
-      C: 3,
-      D: 2,
-      E: 1,
-      F: 0,
-    },
-    "4.0": {
-      A: 4,
-      B: 3,
-      C: 2,
-      D: 1,
-      E: 0,
-      F: 0,
-    },
+  let GRADE_SCALES = {
+    "5.0": { A: 5, B: 4, C: 3, D: 2, E: 1, F: 0, P: null, W: null, I: null },
+    "4.0": { A: 4, B: 3, C: 2, D: 1, E: 0, F: 0, P: null, W: null, I: null },
+    "7.0": { A: 7, B: 6, C: 5, D: 4, E: 3, F: 0, P: null, W: null, I: null },
+    "10.0": { A: 10, B: 8, C: 6, D: 4, E: 2, F: 0, P: null, W: null, I: null },
+    "4.33": { "A+": 4.33, A: 4.0, "A-": 3.67, "B+": 3.33, B: 3.0, "B-": 2.67, "C+": 2.33, C: 2.0, "D": 1.0, F: 0, P: null, W: null, I: null },
   };
 
   // ------------------------------------------------------------------------
@@ -43,6 +33,35 @@ document.addEventListener("DOMContentLoaded", function () {
   const clearHistoryBtn = document.getElementById("btn-clear-history");
   const scaleSelect = document.getElementById("grading-scale-select");
   const semesterNameInput = document.getElementById("semester-name-input");
+
+  // Add Other & Modal Selectors
+  const addOtherBtn = document.getElementById("add-other-btn");
+  const addOtherMenu = document.getElementById("add-other-menu");
+  const itemAddPassfail = document.getElementById("item-add-passfail");
+  const itemAddWithdrawn = document.getElementById("item-add-withdrawn");
+  const itemToggleCarryover = document.getElementById("item-toggle-carryover");
+  const itemOpenCustomScale = document.getElementById("item-open-custom-scale");
+  const btnOpenCustomScale = document.getElementById("btn-open-custom-scale");
+
+  const customScaleModal = document.getElementById("custom-scale-modal");
+  const modalOverlay = document.getElementById("modal-overlay");
+  const modalCloseBtn = document.getElementById("modal-close-btn");
+  const btnCancelCustomScale = document.getElementById("btn-cancel-custom-scale");
+  const btnSaveCustomScale = document.getElementById("btn-save-custom-scale");
+  const customScaleName = document.getElementById("custom-scale-name");
+  const customPtsA = document.getElementById("custom-pts-a");
+  const customPtsB = document.getElementById("custom-pts-b");
+  const customPtsC = document.getElementById("custom-pts-c");
+  const customPtsD = document.getElementById("custom-pts-d");
+  const customPtsE = document.getElementById("custom-pts-e");
+  const customPtsF = document.getElementById("custom-pts-f");
+
+  // Previous CGPA Carryover Selectors
+  const carryoverCard = document.getElementById("carryover-card");
+  const btnCloseCarryover = document.getElementById("btn-close-carryover");
+  const prevTotalUnitsInput = document.getElementById("prev-total-units");
+  const prevTotalPointsInput = document.getElementById("prev-total-points");
+  const prevCgpaCalcDisplay = document.getElementById("prev-cgpa-calc");
 
   const cgpaValueDisplay = document.getElementById("cgpa-value");
   const totalUnitsDisplay = document.getElementById("total-units-value");
@@ -334,7 +353,26 @@ document.addEventListener("DOMContentLoaded", function () {
   // 10. Function: Determine Academic Standing / Class of Degree
   // ------------------------------------------------------------------------
   function getAcademicStanding(cgpa, scale) {
-    if (scale === "5.0") {
+    if (scale === "7.0") {
+      if (cgpa >= 6.00) return { text: "First Class", className: "first-class" };
+      if (cgpa >= 4.60) return { text: "Second Class Upper (2:1)", className: "second-upper" };
+      if (cgpa >= 3.00) return { text: "Second Class Lower (2:2)", className: "second-lower" };
+      if (cgpa >= 2.00) return { text: "Third Class", className: "third-class" };
+      if (cgpa >= 1.00) return { text: "Pass", className: "pass" };
+      return { text: "Fail", className: "fail" };
+    } else if (scale === "10.0") {
+      if (cgpa >= 8.50) return { text: "Outstanding / First Distinction", className: "first-class" };
+      if (cgpa >= 7.00) return { text: "First Class", className: "second-upper" };
+      if (cgpa >= 6.00) return { text: "Second Class", className: "second-lower" };
+      if (cgpa >= 5.00) return { text: "Pass", className: "pass" };
+      return { text: "Fail", className: "fail" };
+    } else if (scale === "4.33" || scale === "4.0") {
+      if (cgpa >= 3.50) return { text: "Distinction / First Class", className: "first-class" };
+      if (cgpa >= 3.00) return { text: "Honors (2:1)", className: "second-upper" };
+      if (cgpa >= 2.00) return { text: "Satisfactory (2:2)", className: "second-lower" };
+      if (cgpa >= 1.00) return { text: "Pass", className: "pass" };
+      return { text: "Fail", className: "fail" };
+    } else if (scale === "5.0") {
       if (cgpa >= 4.50) return { text: "First Class", className: "first-class" };
       if (cgpa >= 3.50) return { text: "Second Class Upper (2:1)", className: "second-upper" };
       if (cgpa >= 2.40) return { text: "Second Class Lower (2:2)", className: "second-lower" };
@@ -342,11 +380,14 @@ document.addEventListener("DOMContentLoaded", function () {
       if (cgpa >= 1.00) return { text: "Pass", className: "pass" };
       return { text: "Fail", className: "fail" };
     } else {
-      // 4.0 Scale
-      if (cgpa >= 3.50) return { text: "Distinction / First Class", className: "first-class" };
-      if (cgpa >= 3.00) return { text: "Honors (2:1)", className: "second-upper" };
-      if (cgpa >= 2.00) return { text: "Satisfactory (2:2)", className: "second-lower" };
-      if (cgpa >= 1.00) return { text: "Pass", className: "pass" };
+      // Custom Scale estimation based on ratio of max point
+      const scaleMap = GRADE_SCALES[scale];
+      const maxPts = scaleMap && scaleMap.A ? scaleMap.A : 5.0;
+      const ratio = maxPts > 0 ? cgpa / maxPts : 0;
+      if (ratio >= 0.85) return { text: "First Class / Excellent", className: "first-class" };
+      if (ratio >= 0.70) return { text: "Second Upper / Very Good", className: "second-upper" };
+      if (ratio >= 0.50) return { text: "Second Lower / Good", className: "second-lower" };
+      if (ratio >= 0.30) return { text: "Pass / Fair", className: "pass" };
       return { text: "Fail", className: "fail" };
     }
   }
@@ -376,25 +417,64 @@ document.addEventListener("DOMContentLoaded", function () {
       const grade = gradeSelect ? gradeSelect.value : "F";
 
       if (!isNaN(units) && units > 0) {
-        const pointPerUnit = gradePointsTable[grade] !== undefined ? gradePointsTable[grade] : 0;
-        const qualityPoint = units * pointPerUnit;
+        // Special Non-GPA grades: P (Pass), W (Withdrawn), I (Incomplete)
+        if (grade === "W" || grade === "I") {
+          // Excluded completely from GPA calculation
+          courseDataList.push({
+            name: name || `Course ${courseDataList.length + 1}`,
+            units: units,
+            score: score,
+            grade: grade,
+            points: 0,
+          });
+        } else if (grade === "P") {
+          // Pass: Credit units counted, 0 points added to quality points, non-penalizing
+          validRowsCount++;
+          courseDataList.push({
+            name: name || `Course ${courseDataList.length + 1}`,
+            units: units,
+            score: score,
+            grade: grade,
+            points: 0,
+          });
+        } else {
+          // Standard Grade
+          const pointPerUnit = gradePointsTable[grade] !== undefined && gradePointsTable[grade] !== null ? gradePointsTable[grade] : 0;
+          const qualityPoint = units * pointPerUnit;
 
-        totalUnits += units;
-        totalQualityPoints += qualityPoint;
-        validRowsCount++;
+          totalUnits += units;
+          totalQualityPoints += qualityPoint;
+          validRowsCount++;
 
-        courseDataList.push({
-          name: name || `Course ${courseDataList.length + 1}`,
-          units: units,
-          score: score,
-          grade: grade,
-          points: qualityPoint,
-        });
+          courseDataList.push({
+            name: name || `Course ${courseDataList.length + 1}`,
+            units: units,
+            score: score,
+            grade: grade,
+            points: qualityPoint,
+          });
+        }
       }
     });
 
+    // Handle Previous Semester Carryover if active
+    let prevUnits = 0;
+    let prevPoints = 0;
+    if (carryoverCard && carryoverCard.style.display !== "none") {
+      prevUnits = parseFloat(prevTotalUnitsInput.value) || 0;
+      prevPoints = parseFloat(prevTotalPointsInput.value) || 0;
+      if (prevUnits > 0) {
+        prevCgpaCalcDisplay.value = (prevPoints / prevUnits).toFixed(2);
+      } else {
+        prevCgpaCalcDisplay.value = "0.00";
+      }
+    }
+
+    const combinedTotalUnits = totalUnits + prevUnits;
+    const combinedTotalPoints = totalQualityPoints + prevPoints;
+
     // Handle edge case when total units is 0
-    if (totalUnits === 0 || validRowsCount === 0) {
+    if (combinedTotalUnits === 0 || (validRowsCount === 0 && prevUnits === 0)) {
       cgpaValueDisplay.textContent = "0.00";
       totalUnitsDisplay.textContent = "0";
       totalPointsDisplay.textContent = "0";
@@ -415,13 +495,13 @@ document.addEventListener("DOMContentLoaded", function () {
       return null;
     }
 
-    const calculatedCGPA = totalQualityPoints / totalUnits;
+    const calculatedCGPA = combinedTotalPoints / combinedTotalUnits;
     const formattedCGPA = calculatedCGPA.toFixed(2);
 
     // Update Result Cards
     cgpaValueDisplay.textContent = formattedCGPA;
-    totalUnitsDisplay.textContent = totalUnits.toString();
-    totalPointsDisplay.textContent = totalQualityPoints.toFixed(1);
+    totalUnitsDisplay.textContent = combinedTotalUnits.toString();
+    totalPointsDisplay.textContent = combinedTotalPoints.toFixed(1);
 
     // Update Standing Remark
     const standing = getAcademicStanding(calculatedCGPA, selectedScale);
@@ -433,8 +513,8 @@ document.addEventListener("DOMContentLoaded", function () {
         scale: selectedScale,
         cgpa: calculatedCGPA,
         formattedCGPA: formattedCGPA,
-        totalUnits: totalUnits,
-        totalPoints: totalQualityPoints,
+        totalUnits: combinedTotalUnits,
+        totalPoints: combinedTotalPoints,
         standing: standing,
         courses: courseDataList,
       };
@@ -775,12 +855,184 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ------------------------------------------------------------------------
-  // 14. Attach Initial Event Listeners
+  // 14. Custom Scales & Add Other Dropdown Logic
   // ------------------------------------------------------------------------
+  function loadCustomScalesFromStorage() {
+    try {
+      const stored = localStorage.getItem(CUSTOM_SCALES_KEY);
+      if (!stored) return;
+      const customScales = JSON.parse(stored);
+      customScales.forEach(function (cs) {
+        GRADE_SCALES[cs.id] = cs.points;
+        // Check if option already exists in select
+        if (!scaleSelect.querySelector(`option[value="${cs.id}"]`)) {
+          const opt = document.createElement("option");
+          opt.value = cs.id;
+          opt.textContent = `${cs.name} (Custom Scale)`;
+          // Insert before CUSTOM_ADD option
+          const addOpt = scaleSelect.querySelector('option[value="CUSTOM_ADD"]');
+          if (addOpt) {
+            scaleSelect.insertBefore(opt, addOpt);
+          } else {
+            scaleSelect.appendChild(opt);
+          }
+        }
+      });
+    } catch (e) {
+      console.error("Failed to load custom scales", e);
+    }
+  }
+
+  function openCustomScaleModal() {
+    if (customScaleModal) customScaleModal.style.display = "flex";
+  }
+
+  function closeCustomScaleModal() {
+    if (customScaleModal) customScaleModal.style.display = "none";
+    if (scaleSelect.value === "CUSTOM_ADD") {
+      scaleSelect.value = "5.0";
+    }
+  }
+
+  function saveCustomScale() {
+    const name = customScaleName ? customScaleName.value.trim() : "";
+    const scaleName = name || "Custom Scale";
+    const scaleId = "CUSTOM_" + Date.now();
+
+    const ptsA = parseFloat(customPtsA ? customPtsA.value : 5.0) || 0;
+    const ptsB = parseFloat(customPtsB ? customPtsB.value : 4.0) || 0;
+    const ptsC = parseFloat(customPtsC ? customPtsC.value : 3.0) || 0;
+    const ptsD = parseFloat(customPtsD ? customPtsD.value : 2.0) || 0;
+    const ptsE = parseFloat(customPtsE ? customPtsE.value : 1.0) || 0;
+    const ptsF = parseFloat(customPtsF ? customPtsF.value : 0.0) || 0;
+
+    const pointsObj = {
+      A: ptsA, B: ptsB, C: ptsC, D: ptsD, E: ptsE, F: ptsF, P: null, W: null, I: null
+    };
+
+    GRADE_SCALES[scaleId] = pointsObj;
+
+    // Save to localStorage
+    try {
+      const stored = localStorage.getItem(CUSTOM_SCALES_KEY);
+      const list = stored ? JSON.parse(stored) : [];
+      list.push({ id: scaleId, name: scaleName, points: pointsObj });
+      localStorage.setItem(CUSTOM_SCALES_KEY, JSON.stringify(list));
+    } catch (e) {
+      console.error("Failed to save custom scale to localStorage", e);
+    }
+
+    // Add option to scale select and select it
+    const opt = document.createElement("option");
+    opt.value = scaleId;
+    opt.textContent = `${scaleName} (${ptsA} Max)`;
+    const addOpt = scaleSelect.querySelector('option[value="CUSTOM_ADD"]');
+    if (addOpt) {
+      scaleSelect.insertBefore(opt, addOpt);
+    } else {
+      scaleSelect.appendChild(opt);
+    }
+
+    scaleSelect.value = scaleId;
+    closeCustomScaleModal();
+    updateGradingBreakdown();
+    calculateCGPA();
+    showToast(`&#9881; Custom Scale <strong>${scaleName}</strong> saved &amp; applied!`, "success");
+  }
+
+  // ------------------------------------------------------------------------
+  // 15. Attach Initial Event Listeners
+  // ------------------------------------------------------------------------
+  loadCustomScalesFromStorage();
+
   // Add Course button click
   addCourseBtn.addEventListener("click", function () {
     addCourseRow();
   });
+
+  // Add Other Dropdown Toggle
+  if (addOtherBtn && addOtherMenu) {
+    addOtherBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const isVisible = addOtherMenu.style.display === "flex";
+      addOtherMenu.style.display = isVisible ? "none" : "flex";
+    });
+
+    document.addEventListener("click", function (e) {
+      if (!addOtherBtn.contains(e.target) && !addOtherMenu.contains(e.target)) {
+        addOtherMenu.style.display = "none";
+      }
+    });
+  }
+
+  // Add Other Dropdown Items
+  if (itemAddPassfail) {
+    itemAddPassfail.addEventListener("click", function () {
+      if (addOtherMenu) addOtherMenu.style.display = "none";
+      addCourseRow("GST Pass/Fail", 2, "", "P");
+      showToast("Added Pass/Fail Course (Non-GPA Credit)", "info");
+    });
+  }
+
+  if (itemAddWithdrawn) {
+    itemAddWithdrawn.addEventListener("click", function () {
+      if (addOtherMenu) addOtherMenu.style.display = "none";
+      addCourseRow("Course Withdrawn", 3, "", "W");
+      showToast("Added Withdrawn Course (Excluded from GPA)", "info");
+    });
+  }
+
+  if (itemToggleCarryover) {
+    itemToggleCarryover.addEventListener("click", function () {
+      if (addOtherMenu) addOtherMenu.style.display = "none";
+      if (carryoverCard) {
+        const isHidden = carryoverCard.style.display === "none";
+        carryoverCard.style.display = isHidden ? "flex" : "none";
+        if (isHidden) {
+          carryoverCard.scrollIntoView({ behavior: "smooth", block: "center" });
+          showToast("Previous Cumulative CGPA Carryover enabled", "info");
+        }
+        calculateCGPA();
+      }
+    });
+  }
+
+  if (btnCloseCarryover) {
+    btnCloseCarryover.addEventListener("click", function () {
+      if (carryoverCard) carryoverCard.style.display = "none";
+      calculateCGPA();
+    });
+  }
+
+  if (prevTotalUnitsInput) {
+    prevTotalUnitsInput.addEventListener("input", function () {
+      calculateCGPA();
+    });
+  }
+
+  if (prevTotalPointsInput) {
+    prevTotalPointsInput.addEventListener("input", function () {
+      calculateCGPA();
+    });
+  }
+
+  if (itemOpenCustomScale) {
+    itemOpenCustomScale.addEventListener("click", function () {
+      if (addOtherMenu) addOtherMenu.style.display = "none";
+      openCustomScaleModal();
+    });
+  }
+
+  if (btnOpenCustomScale) {
+    btnOpenCustomScale.addEventListener("click", function () {
+      openCustomScaleModal();
+    });
+  }
+
+  if (modalOverlay) modalOverlay.addEventListener("click", closeCustomScaleModal);
+  if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeCustomScaleModal);
+  if (btnCancelCustomScale) btnCancelCustomScale.addEventListener("click", closeCustomScaleModal);
+  if (btnSaveCustomScale) btnSaveCustomScale.addEventListener("click", saveCustomScale);
 
   // Calculate CGPA button click
   calculateBtn.addEventListener("click", function () {
@@ -803,11 +1055,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Reset All button click
   resetBtn.addEventListener("click", function () {
+    if (carryoverCard) carryoverCard.style.display = "none";
+    if (prevTotalUnitsInput) prevTotalUnitsInput.value = "0";
+    if (prevTotalPointsInput) prevTotalPointsInput.value = "0";
+    if (prevCgpaCalcDisplay) prevCgpaCalcDisplay.value = "0.00";
     resetAll();
   });
 
   // Scale change listener
   scaleSelect.addEventListener("change", function () {
+    if (scaleSelect.value === "CUSTOM_ADD") {
+      openCustomScaleModal();
+      return;
+    }
     updateGradingBreakdown();
     calculateCGPA();
   });

@@ -18,12 +18,49 @@
 
     <!-- Grading Scale Selection -->
     <section class="scale-section" id="scale-section">
-      <label for="grading-scale-select" class="scale-label" id="scale-label">Grading Scale:</label>
-      <select id="grading-scale-select" class="scale-select">
-        <option value="5.0" selected>5.0 Scale (Standard University)</option>
-        <option value="4.0">4.0 Scale (US / Standard 4-Point)</option>
-      </select>
+      <div class="scale-select-wrapper">
+        <label for="grading-scale-select" class="scale-label" id="scale-label">Grading Scale:</label>
+        <select id="grading-scale-select" class="scale-select">
+          <option value="5.0" selected>5.0 Scale (Standard University)</option>
+          <option value="4.0">4.0 Scale (US / Standard 4-Point)</option>
+          <option value="7.0">7.0 Scale (7-Point University)</option>
+          <option value="10.0">10.0 Scale (10-Point International)</option>
+          <option value="4.33">4.33 Scale (A+, A, A-, B+, B, B-, C+, C, C-, D, F)</option>
+          <option value="CUSTOM_ADD">+ Add Other Custom Scale...</option>
+        </select>
+      </div>
+      <button type="button" class="btn-text-action" id="btn-open-custom-scale" title="Create or edit custom scales">+ Custom Scale</button>
     </section>
+
+    <!-- Custom Scale Modal / Config Box (Hidden by default) -->
+    <div class="custom-scale-modal" id="custom-scale-modal" style="display: none;">
+      <div class="modal-overlay" id="modal-overlay"></div>
+      <div class="modal-content" id="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">&#9881; Add Other / Custom Grading Scale</h3>
+          <button type="button" class="modal-close-btn" id="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc">Define custom grade points for your school's unique grading system.</p>
+          <div class="form-group">
+            <label for="custom-scale-name">Scale Name:</label>
+            <input type="text" id="custom-scale-name" class="form-input" placeholder="e.g. My School 6.0 Scale" value="Custom 6.0 Scale">
+          </div>
+          <div class="custom-points-grid">
+            <div class="point-field"><label>Grade A Points:</label><input type="number" step="0.1" id="custom-pts-a" class="form-input" value="6.0"></div>
+            <div class="point-field"><label>Grade B Points:</label><input type="number" step="0.1" id="custom-pts-b" class="form-input" value="5.0"></div>
+            <div class="point-field"><label>Grade C Points:</label><input type="number" step="0.1" id="custom-pts-c" class="form-input" value="4.0"></div>
+            <div class="point-field"><label>Grade D Points:</label><input type="number" step="0.1" id="custom-pts-d" class="form-input" value="3.0"></div>
+            <div class="point-field"><label>Grade E Points:</label><input type="number" step="0.1" id="custom-pts-e" class="form-input" value="2.0"></div>
+            <div class="point-field"><label>Grade F Points:</label><input type="number" step="0.1" id="custom-pts-f" class="form-input" value="0.0"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btn-cancel-custom-scale">Cancel</button>
+          <button type="button" class="btn btn-primary" id="btn-save-custom-scale">Save &amp; Apply Scale</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Main Calculator Card -->
     <main class="calculator-card" id="calculator-card">
@@ -135,9 +172,48 @@
         </div>
         <div class="actions-wrapper" id="actions-wrapper">
           <button type="button" class="btn btn-secondary" id="add-course-btn">+ Add Course</button>
+          
+          <!-- Add Other Options Dropdown Menu -->
+          <div class="add-other-dropdown-container">
+            <button type="button" class="btn btn-secondary-alt" id="add-other-btn" aria-haspopup="true" aria-expanded="false">+ Add Other &#9662;</button>
+            <div class="add-other-menu" id="add-other-menu" style="display: none;">
+              <button type="button" class="dropdown-item" id="item-add-passfail">&#10004; Add Pass / Fail (Non-GPA) Course</button>
+              <button type="button" class="dropdown-item" id="item-add-withdrawn">&#128683; Add Withdrawn / Incomplete Course</button>
+              <button type="button" class="dropdown-item" id="item-toggle-carryover">&#128202; Include Previous Semester CGPA Carryover</button>
+              <button type="button" class="dropdown-item" id="item-open-custom-scale">&#9881; Add Other / Custom Scale</button>
+            </div>
+          </div>
+
           <button type="button" class="btn btn-primary" id="calculate-btn">Calculate CGPA</button>
           <button type="button" class="btn btn-success" id="save-history-btn">&#128190; Save to History</button>
           <button type="button" class="btn btn-outline" id="reset-btn">Reset All</button>
+        </div>
+      </div>
+
+      <!-- Optional Previous Semester CGPA Carryover Card -->
+      <div class="carryover-card" id="carryover-card" style="display: none;">
+        <div class="carryover-header">
+          <div class="carryover-title-group">
+            <span class="carryover-icon">&#128201;</span>
+            <strong class="carryover-title">Previous Cumulative CGPA Carryover</strong>
+            <span class="carryover-badge">Optional</span>
+          </div>
+          <button type="button" class="btn-close-carryover" id="btn-close-carryover" title="Hide previous CGPA carryover">&times;</button>
+        </div>
+        <p class="carryover-desc">Combine your past transcript total credit units &amp; grade points with this current semester for a comprehensive cumulative CGPA.</p>
+        <div class="carryover-inputs-grid">
+          <div class="carryover-field">
+            <label for="prev-total-units">Previous Total Credit Units:</label>
+            <input type="number" id="prev-total-units" class="form-input" min="0" value="0" placeholder="e.g. 30">
+          </div>
+          <div class="carryover-field">
+            <label for="prev-total-points">Previous Total Grade Points:</label>
+            <input type="number" id="prev-total-points" class="form-input" min="0" step="0.1" value="0" placeholder="e.g. 135.0">
+          </div>
+          <div class="carryover-field">
+            <label for="prev-cgpa-calc">Calculated Past CGPA:</label>
+            <input type="text" id="prev-cgpa-calc" class="form-input readonly" readonly value="0.00">
+          </div>
         </div>
       </div>
 

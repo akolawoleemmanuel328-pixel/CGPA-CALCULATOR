@@ -1,0 +1,6 @@
+{
+  "name": "Student CGPA Calculator",
+  "description": "A Student CGPA Calculator built using HTML, CSS, and JavaScript.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

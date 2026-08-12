@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student CGPA Calculator</title>
+  <!-- Link to external CSS stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container" id="app-container">
+    <!-- Header Section -->
+    <header class="app-header" id="app-header">
+      <div class="header-icon" id="header-icon">&#127891;</div>
+      <h1 class="app-title" id="app-title">Student CGPA Calculator</h1>
+      <p class="app-subtitle" id="app-subtitle">Easily calculate your semester GPA and cumulative CGPA with precision</p>
+    </header>
+
+    <!-- Grading Scale Selection -->
+    <section class="scale-section" id="scale-section">
+      <label for="grading-scale-select" class="scale-label" id="scale-label">Grading Scale:</label>
+      <select id="grading-scale-select" class="scale-select">
+        <option value="5.0" selected>5.0 Scale (Standard University)</option>
+        <option value="4.0">4.0 Scale (US / Standard 4-Point)</option>
+      </select>
+    </section>
+
+    <!-- Main Calculator Card -->
+    <main class="calculator-card" id="calculator-card">
+      <div class="table-responsive" id="table-responsive">
+        <table class="courses-table" id="courses-table">
+          <thead>
+            <tr>
+              <th scope="col" class="col-num">#</th>
+              <th scope="col" class="col-course">Course Name / Code</th>
+              <th scope="col" class="col-units">Credit Units</th>
+              <th scope="col" class="col-score">Score (%)</th>
+              <th scope="col" class="col-grade">Grade</th>
+              <th scope="col" class="col-action">Action</th>
+            </tr>
+          </thead>
+          <tbody id="courses-tbody">
+            <!-- Initial Course Rows -->
+            <tr class="course-row" id="course-row-1">
+              <td class="row-index">1</td>
+              <td>
+                <input type="text" class="course-name-input" placeholder="e.g. MTH 101" value="MTH 101" aria-label="Course Name 1">
+              </td>
+              <td>
+                <input type="number" class="course-units-input" min="1" max="10" value="3" placeholder="Units" aria-label="Credit Units 1">
+              </td>
+              <td>
+                <input type="number" class="course-score-input" min="0" max="100" value="75" placeholder="0-100" aria-label="Score 1">
+              </td>
+              <td>
+                <select class="course-grade-select" aria-label="Grade 1">
+                  <option value="A" selected>A (Excellent)</option>
+                  <option value="B">B (Very Good)</option>
+                  <option value="C">C (Good)</option>
+                  <option value="D">D (Fair)</option>
+                  <option value="E">E (Pass)</option>
+                  <option value="F">F (Fail)</option>
+                </select>
+              </td>
+              <td>
+                <button type="button" class="btn-remove-row" title="Remove course" aria-label="Remove Course 1">&times;</button>
+              </td>
+            </tr>
+            <tr class="course-row" id="course-row-2">
+              <td class="row-index">2</td>
+              <td>
+                <input type="text" class="course-name-input" placeholder="e.g. PHY 101" value="PHY 101" aria-label="Course Name 2">
+              </td>
+              <td>
+                <input type="number" class="course-units-input" min="1" max="10" value="3" placeholder="Units" aria-label="Credit Units 2">
+              </td>
+              <td>
+                <input type="number" class="course-score-input" min="0" max="100" value="65" placeholder="0-100" aria-label="Score 2">
+              </td>
+              <td>
+                <select class="course-grade-select" aria-label="Grade 2">
+                  <option value="A">A (Excellent)</option>
+                  <option value="B" selected>B (Very Good)</option>
+                  <option value="C">C (Good)</option>
+                  <option value="D">D (Fair)</option>
+                  <option value="E">E (Pass)</option>
+                  <option value="F">F (Fail)</option>
+                </select>
+              </td>
+              <td>
+                <button type="button" class="btn-remove-row" title="Remove course" aria-label="Remove Course 2">&times;</button>
+              </td>
+            </tr>
+            <tr class="course-row" id="course-row-3">
+              <td class="row-index">3</td>
+              <td>
+                <input type="text" class="course-name-input" placeholder="e.g. CHM 101" value="CHM 101" aria-label="Course Name 3">
+              </td>
+              <td>
+                <input type="number" class="course-units-input" min="1" max="10" value="2" placeholder="Units" aria-label="Credit Units 3">
+              </td>
+              <td>
+                <input type="number" class="course-score-input" min="0" max="100" value="82" placeholder="0-100" aria-label="Score 3">
+              </td>
+              <td>
+                <select class="course-grade-select" aria-label="Grade 3">
+                  <option value="A" selected>A (Excellent)</option>
+                  <option value="B">B (Very Good)</option>
+                  <option value="C">C (Good)</option>
+                  <option value="D">D (Fair)</option>
+                  <option value="E">E (Pass)</option>
+                  <option value="F">F (Fail)</option>
+                </select>
+              </td>
+              <td>
+                <button type="button" class="btn-remove-row" title="Remove course" aria-label="Remove Course 3">&times;</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Semester / Session Title & Action Button Controls -->
+      <div class="actions-container" id="actions-container">
+        <div class="semester-input-group" id="semester-input-group">
+          <label for="semester-name-input" class="semester-label" id="semester-input-label">Semester / Session Label:</label>
+          <input 
+            type="text" 
+            id="semester-name-input" 
+            class="semester-name-input" 
+            placeholder="e.g. Year 1 - 1st Semester" 
+            value="Semester 1"
+            aria-label="Semester or Session Label"
+          />
+        </div>
+        <div class="actions-wrapper" id="actions-wrapper">
+          <button type="button" class="btn btn-secondary" id="add-course-btn">+ Add Course</button>
+          <button type="button" class="btn btn-primary" id="calculate-btn">Calculate CGPA</button>
+          <button type="button" class="btn btn-success" id="save-history-btn">&#128190; Save to History</button>
+          <button type="button" class="btn btn-outline" id="reset-btn">Reset All</button>
+        </div>
+      </div>
+
+      <!-- Results Display Section -->
+      <div class="result-section" id="result-section">
+        <h2 class="result-title" id="result-title">Calculation Summary</h2>
+        <div class="results-grid" id="results-grid">
+          <div class="result-card" id="card-cgpa">
+            <span class="result-label" id="label-cgpa">CGPA / GPA</span>
+            <span class="result-value cgpa-score" id="cgpa-value">0.00</span>
+          </div>
+          <div class="result-card" id="card-credits">
+            <span class="result-label" id="label-credits">Total Credit Units</span>
+            <span class="result-value" id="total-units-value">0</span>
+          </div>
+          <div class="result-card" id="card-points">
+            <span class="result-label" id="label-points">Total Grade Points</span>
+            <span class="result-value" id="total-points-value">0</span>
+          </div>
+          <div class="result-card" id="card-standing">
+            <span class="result-label" id="label-standing">Academic Remark</span>
+            <span class="result-value standing-badge" id="standing-value">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grading Reference Legend -->
+      <section class="legend-section" id="legend-section">
+        <div class="legend-header-wrapper" id="legend-header-wrapper">
+          <h3 class="legend-title" id="legend-title">Grading Scale Breakdown</h3>
+          <span class="legend-scale-badge" id="legend-scale-badge">5.0 Scale Active</span>
+        </div>
+        <div class="legend-grid" id="legend-grid">
+          <div class="legend-card legend-card-a active" id="legend-card-a" data-grade="A">
+            <span class="badge badge-a" id="badge-a">A</span>
+            <div class="legend-info" id="info-a">
+              <span class="legend-grade-name">Excellent</span>
+              <span class="legend-range">Score: 70 - 100%</span>
+              <span class="legend-pts" id="pts-a">5.0 Points</span>
+            </div>
+            <span class="legend-count" id="count-a" title="Courses with Grade A">2 in list</span>
+          </div>
+
+          <div class="legend-card legend-card-b active" id="legend-card-b" data-grade="B">
+            <span class="badge badge-b" id="badge-b">B</span>
+            <div class="legend-info" id="info-b">
+              <span class="legend-grade-name">Very Good</span>
+              <span class="legend-range">Score: 60 - 69%</span>
+              <span class="legend-pts" id="pts-b">4.0 Points</span>
+            </div>
+            <span class="legend-count" id="count-b" title="Courses with Grade B">1 in list</span>
+          </div>
+
+          <div class="legend-card legend-card-c" id="legend-card-c" data-grade="C">
+            <span class="badge badge-c" id="badge-c">C</span>
+            <div class="legend-info" id="info-c">
+              <span class="legend-grade-name">Good</span>
+              <span class="legend-range">Score: 50 - 59%</span>
+              <span class="legend-pts" id="pts-c">3.0 Points</span>
+            </div>
+            <span class="legend-count" id="count-c" title="Courses with Grade C">0 in list</span>
+          </div>
+
+          <div class="legend-card legend-card-d" id="legend-card-d" data-grade="D">
+            <span class="badge badge-d" id="badge-d">D</span>
+            <div class="legend-info" id="info-d">
+              <span class="legend-grade-name">Fair</span>
+              <span class="legend-range">Score: 45 - 49%</span>
+              <span class="legend-pts" id="pts-d">2.0 Points</span>
+            </div>
+            <span class="legend-count" id="count-d" title="Courses with Grade D">0 in list</span>
+          </div>
+
+          <div class="legend-card legend-card-e" id="legend-card-e" data-grade="E">
+            <span class="badge badge-e" id="badge-e">E</span>
+            <div class="legend-info" id="info-e">
+              <span class="legend-grade-name">Pass</span>
+              <span class="legend-range">Score: 40 - 44%</span>
+              <span class="legend-pts" id="pts-e">1.0 Points</span>
+            </div>
+            <span class="legend-count" id="count-e" title="Courses with Grade E">0 in list</span>
+          </div>
+
+          <div class="legend-card legend-card-f" id="legend-card-f" data-grade="F">
+            <span class="badge badge-f" id="badge-f">F</span>
+            <div class="legend-info" id="info-f">
+              <span class="legend-grade-name">Fail</span>
+              <span class="legend-range">Score: 0 - 39%</span>
+              <span class="legend-pts" id="pts-f">0.0 Points</span>
+            </div>
+            <span class="legend-count" id="count-f" title="Courses with Grade F">0 in list</span>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Calculation History Section -->
+      <section class="history-section" id="history-section">
+        <div class="history-header" id="history-header">
+          <div class="history-title-group" id="history-title-group">
+            <h3 class="history-title" id="history-title">Semester Calculation History</h3>
+            <span class="history-count-badge" id="history-count-badge">0 Saved</span>
+          </div>
+          <div class="history-header-actions" id="history-header-actions">
+            <button type="button" class="btn-clear-history" id="btn-clear-history" title="Clear all saved history">Clear All History</button>
+          </div>
+        </div>
+
+        <!-- Cumulative Multi-Semester CGPA Banner (dynamically rendered if >= 2 entries) -->
+        <div class="cumulative-summary-card" id="cumulative-summary-card" style="display: none;">
+          <div class="cumulative-info">
+            <span class="cumulative-label">Overall Cumulative CGPA (Across All Saved Semesters)</span>
+            <div class="cumulative-stats">
+              <span class="cumulative-score" id="cumulative-cgpa-score">0.00</span>
+              <span class="cumulative-standing standing-badge" id="cumulative-standing">--</span>
+            </div>
+          </div>
+          <div class="cumulative-meta">
+            <div class="cumulative-meta-item">
+              <span class="cumulative-meta-label">Total Credit Units</span>
+              <strong class="cumulative-meta-val" id="cumulative-total-units">0</strong>
+            </div>
+            <div class="cumulative-meta-item">
+              <span class="cumulative-meta-label">Total Grade Points</span>
+              <strong class="cumulative-meta-val" id="cumulative-total-points">0</strong>
+            </div>
+            <div class="cumulative-meta-item">
+              <span class="cumulative-meta-label">Saved Semesters</span>
+              <strong class="cumulative-meta-val" id="cumulative-semesters-count">0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- History Records Container -->
+        <div class="history-list" id="history-list">
+          <!-- Dynamically populated via script.js -->
+        </div>
+
+        <!-- Empty State Placeholder -->
+        <div class="history-empty-state" id="history-empty-state">
+          <div class="empty-icon" id="empty-icon">&#128203;</div>
+          <p class="empty-title" id="empty-title">No Saved Semester History Yet</p>
+          <p class="empty-desc" id="empty-desc">Click <strong>"Save to History"</strong> after calculating your GPA to save this semester. Saved semesters let you track progress and compute your overall Cumulative CGPA.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toast Notification Popup -->
+    <div class="toast-notification" id="toast-notification" role="status" aria-live="polite"></div>
+
+    <!-- Footer -->
+    <footer class="app-footer" id="app-footer">
+      <p id="footer-text">Student CGPA Calculator &bull; HTML, CSS &amp; JavaScript</p>
+    </footer>
+  </div>
+
+  <!-- External JavaScript -->
+  <script src="js/script.js"></script>
+</body>
+</html>

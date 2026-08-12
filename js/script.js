@@ -56,6 +56,28 @@ document.addEventListener("DOMContentLoaded", function () {
   const customPtsE = document.getElementById("custom-pts-e");
   const customPtsF = document.getElementById("custom-pts-f");
 
+  // Batch & Bulk Add Selectors
+  const add5CoursesBtn = document.getElementById("add-5-courses-btn");
+  const openBulkAddBtn = document.getElementById("open-bulk-add-btn");
+  const itemAdd5Courses = document.getElementById("item-add-5-courses");
+  const itemAdd10Courses = document.getElementById("item-add-10-courses");
+  const itemOpenBulkAdd = document.getElementById("item-open-bulk-add");
+
+  const bulkAddModal = document.getElementById("bulk-add-modal");
+  const bulkModalOverlay = document.getElementById("bulk-modal-overlay");
+  const bulkModalCloseBtn = document.getElementById("bulk-modal-close-btn");
+  const btnCancelBulkAdd = document.getElementById("btn-cancel-bulk-add");
+  const btnSubmitBulkAdd = document.getElementById("btn-submit-bulk-add");
+
+  const tabQuickQuantity = document.getElementById("tab-quick-quantity");
+  const tabPasteList = document.getElementById("tab-paste-list");
+  const panelQuickQuantity = document.getElementById("panel-quick-quantity");
+  const panelPasteList = document.getElementById("panel-paste-list");
+
+  const bulkCourseCount = document.getElementById("bulk-course-count");
+  const bulkDefaultUnits = document.getElementById("bulk-default-units");
+  const bulkPasteTextarea = document.getElementById("bulk-paste-textarea");
+
   // Previous CGPA Carryover Selectors
   const carryoverCard = document.getElementById("carryover-card");
   const btnCloseCarryover = document.getElementById("btn-close-carryover");
@@ -262,6 +284,9 @@ document.addEventListener("DOMContentLoaded", function () {
           <option value="D" ${initialGrade === "D" ? "selected" : ""}>D (Fair)</option>
           <option value="E" ${initialGrade === "E" ? "selected" : ""}>E (Pass)</option>
           <option value="F" ${initialGrade === "F" ? "selected" : ""}>F (Fail)</option>
+          <option value="P" ${initialGrade === "P" ? "selected" : ""}>P (Pass - Non GPA)</option>
+          <option value="W" ${initialGrade === "W" ? "selected" : ""}>W (Withdrawn)</option>
+          <option value="I" ${initialGrade === "I" ? "selected" : ""}>I (Incomplete)</option>
         </select>
       </td>
       <td>
@@ -941,7 +966,79 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ------------------------------------------------------------------------
-  // 15. Attach Initial Event Listeners
+  // 15. Bulk Add Courses Modal & Batch Addition Logic
+  // ------------------------------------------------------------------------
+  function addMultipleCourseRows(count = 5, defaultUnits = 3) {
+    const num = Math.min(Math.max(parseInt(count) || 1, 1), 50);
+    for (let i = 0; i < num; i++) {
+      addCourseRow("", defaultUnits, "", "A");
+    }
+    showToast(`Successfully added <strong>${num}</strong> course rows!`, "success");
+  }
+
+  function openBulkModal() {
+    if (bulkAddModal) bulkAddModal.style.display = "flex";
+  }
+
+  function closeBulkModal() {
+    if (bulkAddModal) bulkAddModal.style.display = "none";
+  }
+
+  function submitBulkAdd() {
+    const isQuickTab = tabQuickQuantity && tabQuickQuantity.classList.contains("active");
+
+    if (isQuickTab) {
+      const count = parseInt(bulkCourseCount ? bulkCourseCount.value : 5) || 5;
+      const units = parseInt(bulkDefaultUnits ? bulkDefaultUnits.value : 3) || 3;
+      addMultipleCourseRows(count, units);
+    } else {
+      // Paste Course List Tab
+      const text = bulkPasteTextarea ? bulkPasteTextarea.value.trim() : "";
+      if (!text) {
+        showToast("Please paste or type course lines first.", "error");
+        return;
+      }
+
+      const lines = text.split("\n");
+      let addedCount = 0;
+
+      lines.forEach(function (line) {
+        const cleanLine = line.trim();
+        if (!cleanLine) return;
+
+        // Parse line: "CSC 101, 3, 75" or "CSC 101, 3" or "CSC 101"
+        const parts = cleanLine.split(",").map(p => p.trim());
+        const courseName = parts[0] || "";
+        const units = parts[1] ? (parseInt(parts[1]) || 3) : 3;
+        const scoreOrGrade = parts[2] || "";
+
+        let score = "";
+        let grade = "A";
+
+        if (scoreOrGrade) {
+          if (!isNaN(scoreOrGrade)) {
+            score = parseFloat(scoreOrGrade);
+          } else {
+            grade = scoreOrGrade.toUpperCase();
+          }
+        }
+
+        addCourseRow(courseName, units, score, grade);
+        addedCount++;
+      });
+
+      if (addedCount > 0) {
+        showToast(`Imported &amp; added <strong>${addedCount}</strong> courses!`, "success");
+        if (bulkPasteTextarea) bulkPasteTextarea.value = "";
+      }
+    }
+
+    closeBulkModal();
+    calculateCGPA();
+  }
+
+  // ------------------------------------------------------------------------
+  // 16. Attach Initial Event Listeners
   // ------------------------------------------------------------------------
   loadCustomScalesFromStorage();
 
@@ -949,6 +1046,71 @@ document.addEventListener("DOMContentLoaded", function () {
   addCourseBtn.addEventListener("click", function () {
     addCourseRow();
   });
+
+  // Batch +5 & +Bulk buttons
+  if (add5CoursesBtn) {
+    add5CoursesBtn.addEventListener("click", function () {
+      addMultipleCourseRows(5, 3);
+    });
+  }
+
+  if (openBulkAddBtn) {
+    openBulkAddBtn.addEventListener("click", openBulkModal);
+  }
+
+  if (itemAdd5Courses) {
+    itemAdd5Courses.addEventListener("click", function () {
+      if (addOtherMenu) addOtherMenu.style.display = "none";
+      addMultipleCourseRows(5, 3);
+    });
+  }
+
+  if (itemAdd10Courses) {
+    itemAdd10Courses.addEventListener("click", function () {
+      if (addOtherMenu) addOtherMenu.style.display = "none";
+      addMultipleCourseRows(10, 3);
+    });
+  }
+
+  if (itemOpenBulkAdd) {
+    itemOpenBulkAdd.addEventListener("click", function () {
+      if (addOtherMenu) addOtherMenu.style.display = "none";
+      openBulkModal();
+    });
+  }
+
+  // Bulk Modal tab switching
+  if (tabQuickQuantity && tabPasteList) {
+    tabQuickQuantity.addEventListener("click", function () {
+      tabQuickQuantity.classList.add("active");
+      tabPasteList.classList.remove("active");
+      if (panelQuickQuantity) panelQuickQuantity.style.display = "block";
+      if (panelPasteList) panelPasteList.style.display = "none";
+    });
+
+    tabPasteList.addEventListener("click", function () {
+      tabPasteList.classList.add("active");
+      tabQuickQuantity.classList.remove("active");
+      if (panelPasteList) panelPasteList.style.display = "block";
+      if (panelQuickQuantity) panelQuickQuantity.style.display = "none";
+    });
+  }
+
+  // Quantity preset pills
+  const presetPills = document.querySelectorAll(".btn-preset-pill");
+  presetPills.forEach(function (pill) {
+    pill.addEventListener("click", function () {
+      const count = pill.getAttribute("data-count");
+      if (count && bulkCourseCount) {
+        bulkCourseCount.value = count;
+      }
+    });
+  });
+
+  if (bulkModalOverlay) bulkModalOverlay.addEventListener("click", closeBulkModal);
+  if (bulkModalCloseBtn) bulkModalCloseBtn.addEventListener("click", closeBulkModal);
+  if (btnCancelBulkAdd) btnCancelBulkAdd.addEventListener("click", closeBulkModal);
+  if (btnSubmitBulkAdd) btnSubmitBulkAdd.addEventListener("click", submitBulkAdd);
 
   // Add Other Dropdown Toggle
   if (addOtherBtn && addOtherMenu) {

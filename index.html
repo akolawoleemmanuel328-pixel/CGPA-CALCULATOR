@@ -62,6 +62,54 @@
       </div>
     </div>
 
+    <!-- Bulk Add Courses Modal (Hidden by default) -->
+    <div class="custom-scale-modal" id="bulk-add-modal" style="display: none;">
+      <div class="modal-overlay" id="bulk-modal-overlay"></div>
+      <div class="modal-content" id="bulk-modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">&#128221; Add Multiple / Bulk Courses</h3>
+          <button type="button" class="modal-close-btn" id="bulk-modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="bulk-tabs">
+            <button type="button" class="bulk-tab-btn active" id="tab-quick-quantity">Quick Quantity</button>
+            <button type="button" class="bulk-tab-btn" id="tab-paste-list">Paste Course List</button>
+          </div>
+
+          <!-- Tab 1: Quick Quantity -->
+          <div class="bulk-tab-panel" id="panel-quick-quantity">
+            <p class="modal-desc">Quickly generate multiple blank course rows at once.</p>
+            <div class="form-group">
+              <label for="bulk-course-count">Number of Courses to Add:</label>
+              <div class="quantity-preset-group">
+                <input type="number" id="bulk-course-count" class="form-input" min="1" max="50" value="5">
+                <button type="button" class="btn-preset-pill" data-count="3">+3</button>
+                <button type="button" class="btn-preset-pill" data-count="5">+5</button>
+                <button type="button" class="btn-preset-pill" data-count="8">+8</button>
+                <button type="button" class="btn-preset-pill" data-count="10">+10</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="bulk-default-units">Default Credit Units for New Rows:</label>
+              <input type="number" id="bulk-default-units" class="form-input" min="1" max="10" value="3">
+            </div>
+          </div>
+
+          <!-- Tab 2: Paste List -->
+          <div class="bulk-tab-panel" id="panel-paste-list" style="display: none;">
+            <p class="modal-desc">Paste your list of course codes/names below (one per line). Optionally include units and score separated by commas, e.g.:<br><code>CSC 101, 3, 75</code> or <code>MTH 102, 4</code> or <code>PHY 101</code></p>
+            <div class="form-group">
+              <textarea id="bulk-paste-textarea" class="form-input bulk-textarea" rows="6" placeholder="CSC 101, 3&#10;MTH 102, 4&#10;PHY 103, 3, 80&#10;GST 101, 2, 65"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btn-cancel-bulk-add">Cancel</button>
+          <button type="button" class="btn btn-primary" id="btn-submit-bulk-add">Add Courses</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Main Calculator Card -->
     <main class="calculator-card" id="calculator-card">
       <div class="table-responsive" id="table-responsive">
@@ -171,12 +219,19 @@
           />
         </div>
         <div class="actions-wrapper" id="actions-wrapper">
-          <button type="button" class="btn btn-secondary" id="add-course-btn">+ Add Course</button>
+          <div class="add-course-btn-group">
+            <button type="button" class="btn btn-secondary" id="add-course-btn">+ Add Course</button>
+            <button type="button" class="btn btn-secondary btn-batch-add" id="add-5-courses-btn" title="Add 5 courses at once">+5</button>
+            <button type="button" class="btn btn-secondary btn-batch-add" id="open-bulk-add-btn" title="Bulk add or paste multiple courses">+ Bulk</button>
+          </div>
           
           <!-- Add Other Options Dropdown Menu -->
           <div class="add-other-dropdown-container">
             <button type="button" class="btn btn-secondary-alt" id="add-other-btn" aria-haspopup="true" aria-expanded="false">+ Add Other &#9662;</button>
             <div class="add-other-menu" id="add-other-menu" style="display: none;">
+              <button type="button" class="dropdown-item" id="item-add-5-courses">&#10133; Add 5 Blank Courses</button>
+              <button type="button" class="dropdown-item" id="item-add-10-courses">&#10133; Add 10 Blank Courses</button>
+              <button type="button" class="dropdown-item" id="item-open-bulk-add">&#128221; Bulk Import / Paste Course List...</button>
               <button type="button" class="dropdown-item" id="item-add-passfail">&#10004; Add Pass / Fail (Non-GPA) Course</button>
               <button type="button" class="dropdown-item" id="item-add-withdrawn">&#128683; Add Withdrawn / Incomplete Course</button>
               <button type="button" class="dropdown-item" id="item-toggle-carryover">&#128202; Include Previous Semester CGPA Carryover</button>
